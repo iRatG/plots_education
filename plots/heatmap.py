@@ -133,3 +133,163 @@ def create_heatmap(df, output_path='output/heatmap.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """Возвращает примеры кода для обучения"""
+    return {
+        'title': 'Тепловая карта (Heatmap)',
+        'description': 'Визуализация матричных данных',
+        'when_use': 'Корреляции, паттерны, матрицы',
+        'examples': [
+            {
+                'name': '1️⃣ Простая heatmap',
+                'code': '''# Подготовка данных
+pivot = df.pivot_table(values='Продажи',
+                       index='Категория',
+                       columns='Регион',
+                       aggfunc='mean')
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+im = ax.imshow(pivot.values,
+               cmap='YlOrRd',          # Цветовая карта
+               aspect='auto')          # Автоподбор пропорций
+
+# Настройка осей
+ax.set_xticks(range(len(pivot.columns)))
+ax.set_yticks(range(len(pivot.index)))
+ax.set_xticklabels(pivot.columns)
+ax.set_yticklabels(pivot.index)
+
+# Colorbar
+plt.colorbar(im, ax=ax, label='Средние продажи')
+
+# Настройка
+ax.set_title('Средние продажи: Категории x Регионы')
+
+plt.tight_layout()
+plt.savefig('heatmap_simple.png', dpi=300)'''
+            },
+            {
+                'name': '2️⃣ С аннотациями',
+                'code': '''# Подготовка данных
+pivot = df.pivot_table(values='Продажи',
+                       index='Категория',
+                       columns='Регион',
+                       aggfunc='sum')
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+im = ax.imshow(pivot.values, cmap='viridis', aspect='auto')
+
+# Настройка осей
+ax.set_xticks(range(len(pivot.columns)))
+ax.set_yticks(range(len(pivot.index)))
+ax.set_xticklabels(pivot.columns)
+ax.set_yticklabels(pivot.index)
+
+# Добавляем значения в ячейки
+for i in range(len(pivot.index)):
+    for j in range(len(pivot.columns)):
+        value = pivot.values[i, j]
+        ax.text(j, i, f'{value/1000:.0f}K',
+                ha='center', va='center',
+                color='white' if value > pivot.values.mean() else 'black',
+                fontweight='bold')
+
+# Colorbar
+plt.colorbar(im, ax=ax, label='Продажи (руб.)')
+
+# Настройка
+ax.set_title('Heatmap с аннотациями')
+
+plt.tight_layout()
+plt.savefig('heatmap_annotated.png', dpi=300)'''
+            },
+            {
+                'name': '3️⃣ Корреляционная матрица',
+                'code': '''# Подготовка данных - корреляции числовых столбцов
+numeric_cols = ['Продажи', 'Количество', 'Средняя_цена']
+correlation = df[numeric_cols].corr()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(8, 6))
+im = ax.imshow(correlation,
+               cmap='coolwarm',        # Красный-синий
+               vmin=-1, vmax=1,        # Диапазон от -1 до 1
+               aspect='auto')
+
+# Настройка осей
+ax.set_xticks(range(len(correlation.columns)))
+ax.set_yticks(range(len(correlation.index)))
+ax.set_xticklabels(correlation.columns, rotation=45, ha='right')
+ax.set_yticklabels(correlation.index)
+
+# Добавляем значения корреляций
+for i in range(len(correlation)):
+    for j in range(len(correlation.columns)):
+        value = correlation.iloc[i, j]
+        ax.text(j, i, f'{value:.2f}',
+                ha='center', va='center',
+                color='white' if abs(value) > 0.5 else 'black',
+                fontweight='bold')
+
+# Colorbar
+cbar = plt.colorbar(im, ax=ax)
+cbar.set_label('Корреляция')
+
+# Настройка
+ax.set_title('Корреляционная матрица')
+
+plt.tight_layout()
+plt.savefig('heatmap_correlation.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ Временной heatmap',
+                'code': '''# Подготовка данных по дням недели
+df['День_недели'] = df['Дата'].dt.day_name()
+df['Неделя'] = df['Дата'].dt.isocalendar().week
+
+pivot_time = df.pivot_table(
+    values='Продажи',
+    index='День_недели',
+    columns='Неделя',
+    aggfunc='sum'
+)
+
+# Правильный порядок дней
+day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+             'Friday', 'Saturday', 'Sunday']
+pivot_time = pivot_time.reindex(day_order)
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(14, 6))
+im = ax.imshow(pivot_time.values, cmap='RdYlGn', aspect='auto')
+
+# Настройка осей
+ax.set_xticks(range(len(pivot_time.columns)))
+ax.set_yticks(range(len(pivot_time.index)))
+ax.set_xticklabels(pivot_time.columns)
+ax.set_yticklabels(['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'])
+
+# Colorbar
+plt.colorbar(im, ax=ax, label='Продажи (руб.)')
+
+# Настройка
+ax.set_title('Продажи по дням недели и неделям года')
+ax.set_xlabel('Номер недели')
+ax.set_ylabel('День недели')
+
+plt.tight_layout()
+plt.savefig('heatmap_time.png', dpi=300)'''
+            }
+        ],
+        'tips': [
+            '💡 cmap задает цветовую схему (viridis, YlOrRd, coolwarm)',
+            '💡 aspect="auto" автоматически подбирает пропорции',
+            '💡 vmin/vmax фиксируют диапазон значений',
+            '💡 Добавляйте аннотации для точных значений',
+            '💡 Корреляции лучше в coolwarm (красный-синий)'
+        ]
+    }

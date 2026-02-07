@@ -138,3 +138,141 @@ def create_box_plot(df, output_path='output/box_plot.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """Возвращает примеры кода для обучения"""
+    return {
+        'title': 'Ящик с усами (Box Plot)',
+        'description': 'Статистический анализ распределения',
+        'when_use': 'Медиана, квартили, выбросы',
+        'examples': [
+            {
+                'name': '1️⃣ Простой box plot',
+                'code': '''# Подготовка данных по категориям
+data_to_plot = [df[df['Категория'] == cat]['Средняя_цена'].values
+                for cat in df['Категория'].unique()]
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+bp = ax.boxplot(data_to_plot,
+                labels=df['Категория'].unique(),
+                patch_artist=True)  # Для заливки
+
+# Раскраска ящиков
+for patch in bp['boxes']:
+    patch.set_facecolor('lightblue')
+
+# Настройка
+ax.set_title('Распределение цен по категориям')
+ax.set_xlabel('Категория')
+ax.set_ylabel('Средняя цена (руб.)')
+ax.grid(True, alpha=0.3, axis='y')
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('boxplot_simple.png', dpi=300)'''
+            },
+            {
+                'name': '2️⃣ С разными цветами',
+                'code': '''# Подготовка данных
+categories = df['Категория'].unique()
+data_to_plot = [df[df['Категория'] == cat]['Средняя_цена'].values
+                for cat in categories]
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+bp = ax.boxplot(data_to_plot,
+                labels=categories,
+                patch_artist=True,
+                notch=True,           # Зазубрины
+                showmeans=True)       # Показать среднее
+
+# Разные цвета для каждого ящика
+colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A']
+for patch, color in zip(bp['boxes'], colors):
+    patch.set_facecolor(color)
+    patch.set_alpha(0.7)
+
+# Настройка
+ax.set_title('Box Plot с notch (95% доверительный интервал)')
+ax.set_ylabel('Средняя цена (руб.)')
+ax.grid(True, alpha=0.3, axis='y')
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('boxplot_colored.png', dpi=300)'''
+            },
+            {
+                'name': '3️⃣ Горизонтальный',
+                'code': '''# Подготовка данных
+categories = df['Категория'].unique()
+data_to_plot = [df[df['Категория'] == cat]['Средняя_цена'].values
+                for cat in categories]
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+bp = ax.boxplot(data_to_plot,
+                labels=categories,
+                vert=False,           # Горизонтальный
+                patch_artist=True,
+                showfliers=True)      # Показать выбросы
+
+# Раскраска
+for patch in bp['boxes']:
+    patch.set_facecolor('coral')
+    patch.set_alpha(0.7)
+
+# Настройка
+ax.set_title('Горизонтальный Box Plot')
+ax.set_xlabel('Средняя цена (руб.)')
+ax.grid(True, alpha=0.3, axis='x')
+
+plt.tight_layout()
+plt.savefig('boxplot_horizontal.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ Со статистикой',
+                'code': '''# Подготовка данных
+categories = df['Категория'].unique()
+data_to_plot = [df[df['Категория'] == cat]['Средняя_цена'].values
+                for cat in categories]
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(12, 6))
+bp = ax.boxplot(data_to_plot,
+                labels=categories,
+                patch_artist=True,
+                showmeans=True,
+                meanline=True)
+
+# Раскраска
+for patch in bp['boxes']:
+    patch.set_facecolor('lightgreen')
+    patch.set_alpha(0.7)
+
+# Добавляем подписи медианы
+for i, line in enumerate(bp['medians']):
+    x, y = line.get_xydata()[1]
+    ax.text(x, y, f'{y:.0f}',
+            ha='center', va='bottom',
+            fontsize=9, fontweight='bold')
+
+# Настройка
+ax.set_title('Box Plot с подписями медиан')
+ax.set_ylabel('Средняя цена (руб.)')
+ax.grid(True, alpha=0.3, axis='y')
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('boxplot_stats.png', dpi=300)'''
+            }
+        ],
+        'tips': [
+            '💡 Показывает медиану, квартили и выбросы',
+            '💡 notch=True добавляет 95% доверительный интервал',
+            '💡 showmeans=True показывает среднее значение',
+            '💡 vert=False делает горизонтальным',
+            '💡 Выбросы - точки за пределами усов'
+        ]
+    }

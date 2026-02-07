@@ -156,3 +156,152 @@ def create_pivot_plots(df, output_path='output/pivot_plots.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """Возвращает примеры кода для обучения"""
+    return {
+        'title': 'Pivot таблицы',
+        'description': 'Многомерный анализ данных',
+        'when_use': 'Агрегация, группировка, сводные таблицы',
+        'examples': [
+            {
+                'name': '1️⃣ Простая pivot таблица',
+                'code': '''# Создание pivot таблицы
+pivot = df.pivot_table(
+    values='Продажи',          # Что агрегируем
+    index='Категория',          # Строки
+    columns='Регион',           # Столбцы
+    aggfunc='sum'              # Функция агрегации
+)
+
+# Визуализация
+fig, ax = plt.subplots(figsize=(10, 6))
+pivot.plot(kind='bar',
+           ax=ax,
+           color=['#FF6B6B', '#4ECDC4', '#45B7D1'],
+           width=0.8)
+
+# Настройка
+ax.set_title('Продажи: Категории × Регионы')
+ax.set_xlabel('Категория')
+ax.set_ylabel('Продажи (руб.)')
+ax.legend(title='Регион')
+ax.grid(True, alpha=0.3, axis='y')
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('pivot_simple.png', dpi=300)'''
+            },
+            {
+                'name': '2️⃣ Накопительная pivot',
+                'code': '''# Создание pivot таблицы
+pivot = df.pivot_table(
+    values='Продажи',
+    index='Регион',
+    columns='Категория',
+    aggfunc='sum',
+    fill_value=0              # Заполнить пропуски
+)
+
+# Визуализация stacked
+fig, ax = plt.subplots(figsize=(10, 6))
+pivot.plot(kind='bar',
+           ax=ax,
+           stacked=True,          # Накопительная
+           colormap='Set3',
+           edgecolor='white',
+           linewidth=1.5)
+
+# Настройка
+ax.set_title('Структура продаж по регионам')
+ax.set_xlabel('Регион')
+ax.set_ylabel('Продажи (руб.)')
+ax.legend(title='Категория', bbox_to_anchor=(1.05, 1))
+ax.grid(True, alpha=0.3, axis='y')
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('pivot_stacked.png', dpi=300, bbox_inches='tight')'''
+            },
+            {
+                'name': '3️⃣ Heatmap из pivot',
+                'code': '''# Создание pivot таблицы
+pivot = df.pivot_table(
+    values='Продажи',
+    index='Категория',
+    columns='Регион',
+    aggfunc='mean'
+)
+
+# Визуализация как heatmap
+fig, ax = plt.subplots(figsize=(10, 6))
+im = ax.imshow(pivot.values,
+               cmap='YlOrRd',
+               aspect='auto')
+
+# Настройка осей
+ax.set_xticks(range(len(pivot.columns)))
+ax.set_yticks(range(len(pivot.index)))
+ax.set_xticklabels(pivot.columns)
+ax.set_yticklabels(pivot.index)
+
+# Добавляем значения
+for i in range(len(pivot.index)):
+    for j in range(len(pivot.columns)):
+        value = pivot.values[i, j]
+        ax.text(j, i, f'{value:,.0f}',
+                ha='center', va='center',
+                color='white' if value > pivot.values.mean() else 'black')
+
+# Colorbar
+plt.colorbar(im, ax=ax, label='Средние продажи')
+
+# Настройка
+ax.set_title('Pivot Heatmap: Средние продажи')
+
+plt.tight_layout()
+plt.savefig('pivot_heatmap.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ Множественные агрегации',
+                'code': '''# Pivot с несколькими функциями
+pivot = df.pivot_table(
+    values='Продажи',
+    index='Категория',
+    aggfunc=['sum', 'mean', 'count']  # Несколько функций
+)
+
+# Визуализация
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+# График 1: Сумма
+pivot['sum'].plot(kind='barh', ax=axes[0], color='skyblue')
+axes[0].set_title('Сумма продаж')
+axes[0].set_xlabel('Продажи (руб.)')
+axes[0].grid(True, alpha=0.3, axis='x')
+
+# График 2: Среднее
+pivot['mean'].plot(kind='barh', ax=axes[1], color='coral')
+axes[1].set_title('Среднее продаж')
+axes[1].set_xlabel('Продажи (руб.)')
+axes[1].grid(True, alpha=0.3, axis='x')
+
+# График 3: Количество
+pivot['count'].plot(kind='barh', ax=axes[2], color='lightgreen')
+axes[2].set_title('Количество записей')
+axes[2].set_xlabel('Записей')
+axes[2].grid(True, alpha=0.3, axis='x')
+
+plt.tight_layout()
+plt.savefig('pivot_multi.png', dpi=300)'''
+            }
+        ],
+        'tips': [
+            '💡 aggfunc может быть: sum, mean, count, min, max, std',
+            '💡 fill_value=0 заполняет пропущенные значения',
+            '💡 margins=True добавляет итоговые строки',
+            '💡 Можно использовать несколько функций в списке',
+            '💡 pivot_table() мощнее чем groupby() для сложного анализа'
+        ]
+    }

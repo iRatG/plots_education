@@ -114,3 +114,140 @@ def create_histogram(df, output_path='output/histogram.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """Возвращает примеры кода для обучения"""
+    return {
+        'title': 'Гистограмма (Histogram)',
+        'description': 'Показывает распределение значений',
+        'when_use': 'Распределение данных, частота значений',
+        'examples': [
+            {
+                'name': '1️⃣ Простая гистограмма',
+                'code': '''# Подготовка данных
+prices = df['Средняя_цена']
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.hist(prices,
+        bins=30,              # Количество столбцов
+        color='coral',        # Цвет
+        edgecolor='black',    # Цвет границ
+        alpha=0.7)            # Прозрачность
+
+# Настройка
+ax.set_title('Распределение средней цены')
+ax.set_xlabel('Средняя цена (руб.)')
+ax.set_ylabel('Частота')
+ax.grid(True, alpha=0.3, axis='y')
+
+plt.tight_layout()
+plt.savefig('histogram_simple.png', dpi=300)'''
+            },
+            {
+                'name': '2️⃣ С кривой плотности',
+                'code': '''# Подготовка данных
+prices = df['Средняя_цена']
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Гистограмма
+n, bins, patches = ax.hist(prices,
+                            bins=30,
+                            density=True,      # Нормализация
+                            color='lightblue',
+                            edgecolor='black',
+                            alpha=0.6,
+                            label='Гистограмма')
+
+# Кривая плотности (KDE)
+from scipy import stats
+density = stats.gaussian_kde(prices)
+xs = np.linspace(prices.min(), prices.max(), 200)
+ax.plot(xs, density(xs),
+        'r-', linewidth=2, label='Плотность')
+
+# Настройка
+ax.set_title('Распределение с кривой плотности')
+ax.set_xlabel('Средняя цена (руб.)')
+ax.set_ylabel('Плотность')
+ax.legend()
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('histogram_density.png', dpi=300)'''
+            },
+            {
+                'name': '3️⃣ Сравнение распределений',
+                'code': '''# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Гистограммы для каждой категории
+categories = df['Категория'].unique()
+colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A']
+
+for i, category in enumerate(categories):
+    cat_prices = df[df['Категория'] == category]['Средняя_цена']
+    ax.hist(cat_prices,
+            bins=20,
+            alpha=0.5,              # Полупрозрачно
+            label=category,
+            color=colors[i],
+            edgecolor='white')
+
+# Настройка
+ax.set_title('Сравнение распределений цен')
+ax.set_xlabel('Средняя цена (руб.)')
+ax.set_ylabel('Частота')
+ax.legend()
+ax.grid(True, alpha=0.3, axis='y')
+
+plt.tight_layout()
+plt.savefig('histogram_comparison.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ Со статистикой',
+                'code': '''# Подготовка данных
+prices = df['Средняя_цена']
+mean_price = prices.mean()
+median_price = prices.median()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Гистограмма
+ax.hist(prices,
+        bins=30,
+        color='skyblue',
+        edgecolor='black',
+        alpha=0.7)
+
+# Линии среднего и медианы
+ax.axvline(mean_price, color='red',
+           linestyle='--', linewidth=2,
+           label=f'Среднее: {mean_price:.0f}')
+ax.axvline(median_price, color='green',
+           linestyle='--', linewidth=2,
+           label=f'Медиана: {median_price:.0f}')
+
+# Настройка
+ax.set_title('Распределение с показателями')
+ax.set_xlabel('Средняя цена (руб.)')
+ax.set_ylabel('Частота')
+ax.legend()
+ax.grid(True, alpha=0.3, axis='y')
+
+plt.tight_layout()
+plt.savefig('histogram_stats.png', dpi=300)'''
+            }
+        ],
+        'tips': [
+            '💡 bins определяет количество столбцов',
+            '💡 density=True нормализует гистограмму',
+            '💡 alpha<1 помогает при наложении',
+            '💡 axvline() рисует вертикальные линии',
+            '💡 Используйте 20-50 bins для большинства случаев'
+        ]
+    }

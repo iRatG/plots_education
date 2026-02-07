@@ -26,6 +26,17 @@ from plots import (
     create_violin_plot,
     create_pivot_plots
 )
+# Импорт функций для получения примеров кода
+from plots.line_plot import get_code_example as get_line_code
+from plots.bar_plot import get_code_example as get_bar_code
+from plots.pie_plot import get_code_example as get_pie_code
+from plots.scatter_plot import get_code_example as get_scatter_code
+from plots.histogram import get_code_example as get_histogram_code
+from plots.box_plot import get_code_example as get_box_code
+from plots.heatmap import get_code_example as get_heatmap_code
+from plots.area_plot import get_code_example as get_area_code
+from plots.violin_plot import get_code_example as get_violin_code
+from plots.pivot_plots import get_code_example as get_pivot_code
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -223,6 +234,43 @@ def get_statistics():
             'success': True,
             'statistics': stats
         })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+
+
+@app.route('/api/get_code/<plot_type>', methods=['GET'])
+def get_code(plot_type):
+    """Получить пример кода для типа графика"""
+    try:
+        # Словарь функций для получения кода
+        code_functions = {
+            'line': get_line_code,
+            'bar': get_bar_code,
+            'pie': get_pie_code,
+            'scatter': get_scatter_code,
+            'histogram': get_histogram_code,
+            'box': get_box_code,
+            'heatmap': get_heatmap_code,
+            'area': get_area_code,
+            'violin': get_violin_code,
+            'pivot': get_pivot_code
+        }
+
+        if plot_type in code_functions:
+            code_data = code_functions[plot_type]()
+            return jsonify({
+                'success': True,
+                'code': code_data
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Примеры кода для {plot_type} пока не готовы'
+            }), 404
 
     except Exception as e:
         return jsonify({

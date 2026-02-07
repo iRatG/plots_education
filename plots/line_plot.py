@@ -103,3 +103,131 @@ def create_line_plot(df, output_path='output/line_plot.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """
+    Возвращает примеры кода для обучения
+    """
+    return {
+        'title': 'Линейный график (Line Plot)',
+        'description': 'Показывает динамику изменения данных во времени',
+        'when_use': 'Временные ряды, тренды, динамика продаж',
+        'examples': [
+            {
+                'name': '1️⃣ Простой линейный график',
+                'code': '''# Подготовка данных
+daily_sales = df.groupby('Дата')['Продажи'].sum()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.plot(daily_sales.index, daily_sales.values,
+        color='#2E86DE',      # Цвет линии
+        linewidth=2,          # Толщина линии
+        marker='o',           # Маркеры точек
+        markersize=4)         # Размер маркеров
+
+# Настройка графика
+ax.set_title('Динамика продаж')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.grid(True, alpha=0.3)      # Сетка
+ax.tick_params(axis='x', rotation=45)  # Поворот подписей
+
+plt.tight_layout()
+plt.savefig('line_plot.png', dpi=300, bbox_inches='tight')'''
+            },
+            {
+                'name': '2️⃣ Несколько линий (сравнение)',
+                'code': '''# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Рисуем линию для каждой категории
+for category in df['Категория'].unique():
+    cat_data = df[df['Категория'] == category]
+    cat_data = cat_data.groupby('Дата')['Продажи'].sum()
+
+    ax.plot(cat_data.index, cat_data.values,
+            marker='o',           # Маркеры
+            linewidth=2,          # Толщина
+            label=category)       # Подпись для легенды
+
+# Настройка
+ax.set_title('Сравнение продаж по категориям')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.legend(loc='best')             # Легенда
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('line_comparison.png', dpi=300)'''
+            },
+            {
+                'name': '3️⃣ Со сглаживанием (скользящее среднее)',
+                'code': '''# Подготовка данных
+daily_sales = df.groupby('Дата')['Продажи'].sum()
+rolling_mean = daily_sales.rolling(window=7).mean()  # Среднее за 7 дней
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Исходные данные (полупрозрачные)
+ax.plot(daily_sales.index, daily_sales.values,
+        color='lightgray',
+        linewidth=1,
+        alpha=0.5,
+        label='Исходные данные')
+
+# Сглаженные данные
+ax.plot(rolling_mean.index, rolling_mean.values,
+        color='#EE5A6F',
+        linewidth=2.5,
+        label='Скользящее среднее (7 дней)')
+
+# Настройка
+ax.set_title('Сглаживание данных')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.legend()
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('line_smoothed.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ С заливкой области',
+                'code': '''# Подготовка данных
+daily_sales = df.groupby('Дата')['Продажи'].sum()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Линия
+ax.plot(daily_sales.index, daily_sales.values,
+        color='#00D2D3',
+        linewidth=2.5)
+
+# Заливка области под линией
+ax.fill_between(daily_sales.index,      # X координаты
+                daily_sales.values,       # Y координаты
+                alpha=0.3,                # Прозрачность
+                color='#00D2D3')          # Цвет заливки
+
+# Настройка
+ax.set_title('График с заливкой области')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('line_filled.png', dpi=300)'''
+            }
+        ],
+        'tips': [
+            '💡 Используйте linewidth=2-3 для хорошей видимости',
+            '💡 marker="o" добавляет точки на линии',
+            '💡 alpha=0.5 делает линию полупрозрачной',
+            '💡 rolling().mean() сглаживает данные',
+            '💡 fill_between() заливает область под графиком'
+        ]
+    }

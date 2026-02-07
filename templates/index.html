@@ -8,6 +8,9 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+
     <!-- Custom CSS -->
     <style>
         body {
@@ -91,6 +94,127 @@
         .alert-custom {
             border-radius: 10px;
             margin-top: 15px;
+        }
+
+        /* Code Modal Styles */
+        .code-modal .modal-dialog {
+            max-width: 900px;
+        }
+
+        .code-modal .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .code-modal .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 20px 30px;
+        }
+
+        .code-section {
+            margin-bottom: 25px;
+        }
+
+        .code-section h5 {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .code-block {
+            position: relative;
+            background: #2d2d2d;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .code-block pre code {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .tips-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .tips-section ul {
+            margin: 10px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .tips-section li {
+            margin-bottom: 8px;
+        }
+
+        .code-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .code-tab {
+            background: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .code-tab:hover {
+            background: #e0e0e0;
+        }
+
+        .code-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .show-code-btn {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -227,6 +351,11 @@
                     </div>
                     <div class="card-body text-center">
                         <img id="plotImage" src="" alt="График">
+                        <div class="mt-3">
+                            <button class="btn btn-primary btn-lg show-code-btn" onclick="showCodeModal()" id="showCodeBtn" style="display: none;">
+                                📖 Показать код
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -263,8 +392,40 @@
         </div>
     </div>
 
+    <!-- Code Modal -->
+    <div class="modal fade code-modal" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h4 class="modal-title mb-1" id="codeModalLabel">📖 Код для построения графика</h4>
+                        <p class="mb-0 opacity-75" id="codeModalDescription"></p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="codeModalBody">
+                    <!-- Tabs for different examples -->
+                    <div class="code-tabs" id="codeTabs"></div>
+
+                    <!-- Code display area -->
+                    <div id="codeDisplay"></div>
+
+                    <!-- Tips section -->
+                    <div class="tips-section" id="tipsSection"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Prism.js for syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 
     <!-- Custom JavaScript -->
     <script>
@@ -341,12 +502,19 @@
             }
         }
 
+        let currentPlotType = '';
+        let currentCodeData = null;
+
         async function createPlot(plotType) {
             const loadingIndicator = document.getElementById('loadingIndicator');
             const plotDisplay = document.getElementById('plotDisplay');
+            const showCodeBtn = document.getElementById('showCodeBtn');
 
             loadingIndicator.style.display = 'block';
             plotDisplay.style.display = 'none';
+            showCodeBtn.style.display = 'none';
+
+            currentPlotType = plotType;
 
             try {
                 const response = await fetch(`/api/create_plot/${plotType}`, {
@@ -358,6 +526,10 @@
                 if (data.success) {
                     document.getElementById('plotImage').src = data.image_url + '?' + new Date().getTime();
                     plotDisplay.style.display = 'block';
+
+                    // Show code button for all plot types
+                    showCodeBtn.style.display = 'inline-block';
+
                     showMessage(`✅ График "${plotType}" успешно создан!`, 'success');
 
                     // Scroll to plot
@@ -370,6 +542,106 @@
             } finally {
                 loadingIndicator.style.display = 'none';
             }
+        }
+
+        async function showCodeModal() {
+            try {
+                const response = await fetch(`/api/get_code/${currentPlotType}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    currentCodeData = data.code;
+                    displayCodeModal(data.code);
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(document.getElementById('codeModal'));
+                    modal.show();
+                } else {
+                    showMessage('❌ ' + data.error, 'warning');
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка при загрузке кода: ' + error, 'danger');
+            }
+        }
+
+        function displayCodeModal(codeData) {
+            // Set title and description
+            document.getElementById('codeModalLabel').textContent = `📖 ${codeData.title}`;
+            document.getElementById('codeModalDescription').textContent = codeData.description;
+
+            // Create tabs
+            const tabsContainer = document.getElementById('codeTabs');
+            tabsContainer.innerHTML = '';
+
+            codeData.examples.forEach((example, index) => {
+                const tab = document.createElement('button');
+                tab.className = 'code-tab' + (index === 0 ? ' active' : '');
+                tab.textContent = example.name;
+                tab.onclick = () => showCodeExample(index);
+                tabsContainer.appendChild(tab);
+            });
+
+            // Show first example
+            showCodeExample(0);
+
+            // Display tips
+            const tipsContainer = document.getElementById('tipsSection');
+            if (codeData.tips && codeData.tips.length > 0) {
+                tipsContainer.innerHTML = `
+                    <h5>💡 Полезные советы</h5>
+                    <ul>
+                        ${codeData.tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                tipsContainer.innerHTML = '';
+            }
+        }
+
+        function showCodeExample(index) {
+            if (!currentCodeData) return;
+
+            const example = currentCodeData.examples[index];
+            const codeDisplay = document.getElementById('codeDisplay');
+
+            // Update active tab
+            document.querySelectorAll('.code-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+
+            // Display code
+            codeDisplay.innerHTML = `
+                <div class="code-section">
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(${index})">📋 Копировать</button>
+                        <pre><code class="language-python">${escapeHtml(example.code)}</code></pre>
+                    </div>
+                </div>
+            `;
+
+            // Apply syntax highlighting
+            Prism.highlightAll();
+        }
+
+        function copyCode(index) {
+            const example = currentCodeData.examples[index];
+            navigator.clipboard.writeText(example.code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Скопировано!';
+                btn.classList.add('copied');
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>

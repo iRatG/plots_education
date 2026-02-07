@@ -115,3 +115,122 @@ def create_pie_plot(df, output_path='output/pie_plot.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """Возвращает примеры кода для обучения"""
+    return {
+        'title': 'Круговая диаграмма (Pie Chart)',
+        'description': 'Показывает части от целого',
+        'when_use': 'Доли и проценты (3-7 категорий)',
+        'examples': [
+            {
+                'name': '1️⃣ Простая круговая',
+                'code': '''# Подготовка данных
+region_sales = df.groupby('Регион')['Продажи'].sum()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.pie(region_sales.values,         # Значения
+       labels=region_sales.index,    # Подписи
+       autopct='%1.1f%%',            # Формат процентов
+       startangle=90,                # Начальный угол
+       colors=['#FF6B6B', '#4ECDC4', '#45B7D1'])  # Цвета
+
+ax.set_title('Распределение продаж по регионам')
+
+plt.tight_layout()
+plt.savefig('pie_simple.png', dpi=300)'''
+            },
+            {
+                'name': '2️⃣ С выделенным сектором',
+                'code': '''# Подготовка данных
+region_sales = df.groupby('Регион')['Продажи'].sum()
+region_sales = region_sales.sort_values(ascending=False)
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(8, 8))
+
+# Выделяем самый большой сектор
+explode = [0.1] + [0] * (len(region_sales) - 1)  # Первый выделен
+
+ax.pie(region_sales.values,
+       labels=region_sales.index,
+       autopct='%1.1f%%',
+       explode=explode,              # Выделение секторов
+       shadow=True,                  # Тень
+       startangle=90,
+       colors=['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'])
+
+ax.set_title('Лидер по продажам (выделен)')
+
+plt.tight_layout()
+plt.savefig('pie_exploded.png', dpi=300)'''
+            },
+            {
+                'name': '3️⃣ Донатная диаграмма',
+                'code': '''# Подготовка данных
+category_sales = df.groupby('Категория')['Продажи'].sum()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(8, 8))
+
+wedges, texts, autotexts = ax.pie(
+    category_sales.values,
+    labels=category_sales.index,
+    autopct='%1.1f%%',
+    startangle=90,
+    pctdistance=0.85,                # Расстояние процентов
+    colors=['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A']
+)
+
+# Создаем "дырку" в центре (donut)
+centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+ax.add_artist(centre_circle)
+
+# Стилизация текста
+for autotext in autotexts:
+    autotext.set_color('white')
+    autotext.set_fontweight('bold')
+
+ax.set_title('Структура продаж (донат)')
+
+plt.tight_layout()
+plt.savefig('pie_donut.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ С подписями снаружи',
+                'code': '''# Подготовка данных
+category_sales = df.groupby('Категория')['Продажи'].sum()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 8))
+
+wedges, texts, autotexts = ax.pie(
+    category_sales.values,
+    autopct='%1.1f%%',
+    startangle=90,
+    colors=['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'],
+    wedgeprops={'edgecolor': 'white', 'linewidth': 2}
+)
+
+# Добавляем подписи снаружи
+ax.legend(wedges, category_sales.index,
+          title="Категории",
+          loc="center left",
+          bbox_to_anchor=(1, 0, 0.5, 1))
+
+ax.set_title('Продажи по категориям')
+
+plt.tight_layout()
+plt.savefig('pie_legend.png', dpi=300, bbox_inches='tight')'''
+            }
+        ],
+        'tips': [
+            '💡 Используйте 3-7 категорий максимум',
+            '💡 explode выделяет важные сектора',
+            '💡 startangle=90 начинает с 12 часов',
+            '💡 pctdistance регулирует положение процентов',
+            '💡 Добавьте Circle для донатной диаграммы'
+        ]
+    }

@@ -109,3 +109,147 @@ def create_bar_plot(df, output_path='output/bar_plot.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """Возвращает примеры кода для обучения"""
+    return {
+        'title': 'Столбчатая диаграмма (Bar Plot)',
+        'description': 'Сравнение значений по категориям',
+        'when_use': 'Сравнение категорий, рейтинги, топы',
+        'examples': [
+            {
+                'name': '1️⃣ Простая столбчатая',
+                'code': '''# Подготовка данных
+category_sales = df.groupby('Категория')['Продажи'].sum()
+category_sales = category_sales.sort_values(ascending=False)
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.bar(category_sales.index,      # Категории (X)
+       category_sales.values,       # Значения (Y)
+       color='skyblue',             # Цвет столбцов
+       edgecolor='navy',            # Цвет границ
+       alpha=0.8)                   # Прозрачность
+
+# Настройка
+ax.set_title('Продажи по категориям')
+ax.set_xlabel('Категория')
+ax.set_ylabel('Продажи (руб.)')
+ax.grid(True, alpha=0.3, axis='y')  # Сетка только по Y
+ax.tick_params(axis='x', rotation=45)  # Поворот подписей
+
+plt.tight_layout()
+plt.savefig('bar_plot.png', dpi=300)'''
+            },
+            {
+                'name': '2️⃣ Горизонтальная (сравнение)',
+                'code': '''# Подготовка данных
+category_sales = df.groupby('Категория')['Продажи'].sum()
+category_sales = category_sales.sort_values()  # Сортировка по возрастанию
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+bars = ax.barh(category_sales.index,    # Категории (Y)
+               category_sales.values,     # Значения (X)
+               color='coral',
+               edgecolor='darkred',
+               alpha=0.8)
+
+# Добавление значений на столбцы
+for bar in bars:
+    width = bar.get_width()
+    ax.text(width, bar.get_y() + bar.get_height()/2,
+            f'{width:,.0f}',
+            ha='left', va='center', fontsize=10)
+
+# Настройка
+ax.set_title('Топ продаж по категориям')
+ax.set_xlabel('Продажи (руб.)')
+ax.grid(True, alpha=0.3, axis='x')
+
+plt.tight_layout()
+plt.savefig('bar_horizontal.png', dpi=300)'''
+            },
+            {
+                'name': '3️⃣ Группированная (сравнение групп)',
+                'code': '''# Подготовка данных
+pivot = df.pivot_table(values='Продажи',
+                       index='Категория',
+                       columns='Регион',
+                       aggfunc='sum')
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Параметры
+x = range(len(pivot.index))
+width = 0.25  # Ширина одного столбца
+colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+
+# Рисуем столбцы для каждого региона
+for i, region in enumerate(pivot.columns):
+    offset = width * (i - 1)  # Смещение
+    ax.bar([xi + offset for xi in x],
+           pivot[region],
+           width=width,
+           label=region,
+           color=colors[i],
+           alpha=0.8)
+
+# Настройка
+ax.set_title('Продажи по категориям и регионам')
+ax.set_xlabel('Категория')
+ax.set_ylabel('Продажи (руб.)')
+ax.set_xticks(x)
+ax.set_xticklabels(pivot.index, rotation=45)
+ax.legend(title='Регион')
+ax.grid(True, alpha=0.3, axis='y')
+
+plt.tight_layout()
+plt.savefig('bar_grouped.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ С градиентной заливкой',
+                'code': '''# Подготовка данных
+category_sales = df.groupby('Категория')['Продажи'].sum()
+category_sales = category_sales.sort_values(ascending=False)
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Создаем градиентные цвета (от темного к светлому)
+colors = plt.cm.viridis(range(len(category_sales)))
+
+bars = ax.bar(category_sales.index,
+              category_sales.values,
+              color=colors,          # Разные цвета
+              edgecolor='white',
+              linewidth=2)
+
+# Добавляем значения сверху столбцов
+for bar in bars:
+    height = bar.get_height()
+    ax.text(bar.get_x() + bar.get_width()/2, height,
+            f'{height/1000:.0f}K',
+            ha='center', va='bottom', fontsize=10, fontweight='bold')
+
+# Настройка
+ax.set_title('Рейтинг продаж (с градиентом)')
+ax.set_ylabel('Продажи (руб.)')
+ax.grid(True, alpha=0.3, axis='y')
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('bar_gradient.png', dpi=300)'''
+            }
+        ],
+        'tips': [
+            '💡 barh() создает горизонтальные столбцы',
+            '💡 Используйте edgecolor для границ столбцов',
+            '💡 ax.text() добавляет подписи на столбцы',
+            '💡 Сортируйте данные для лучшей читаемости',
+            '💡 width параметр задает ширину столбцов в группах'
+        ]
+    }
+

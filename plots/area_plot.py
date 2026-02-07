@@ -119,3 +119,150 @@ def create_area_plot(df, output_path='output/area_plot.png'):
     plt.close()
 
     return output_path
+
+
+def get_code_example():
+    """Возвращает примеры кода для обучения"""
+    return {
+        'title': 'Площадной график (Area Plot)',
+        'description': 'Показывает объем данных во времени',
+        'when_use': 'Накопительные данные, объемы',
+        'examples': [
+            {
+                'name': '1️⃣ Простой area plot',
+                'code': '''# Подготовка данных
+daily_sales = df.groupby('Дата')['Продажи'].sum().sort_index()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.fill_between(daily_sales.index,    # X
+                daily_sales.values,     # Y
+                alpha=0.5,              # Прозрачность
+                color='skyblue')
+
+# Добавляем линию сверху
+ax.plot(daily_sales.index, daily_sales.values,
+        color='blue', linewidth=2)
+
+# Настройка
+ax.set_title('Динамика продаж (площадь)')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.grid(True, alpha=0.3)
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('area_simple.png', dpi=300)'''
+            },
+            {
+                'name': '2️⃣ Накопительный (stacked)',
+                'code': '''# Подготовка данных
+pivot = df.groupby(['Дата', 'Категория'])['Продажи'].sum().unstack(fill_value=0)
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Цвета
+colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A']
+
+# Stacked area plot
+ax.stackplot(pivot.index,
+             *[pivot[col] for col in pivot.columns],
+             labels=pivot.columns,
+             colors=colors,
+             alpha=0.7)
+
+# Настройка
+ax.set_title('Накопительная динамика продаж по категориям')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.legend(loc='upper left')
+ax.grid(True, alpha=0.3)
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('area_stacked.png', dpi=300)'''
+            },
+            {
+                'name': '3️⃣ С несколькими областями',
+                'code': '''# Создание графика
+fig, ax = plt.subplots(figsize=(12, 6))
+
+colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A']
+
+# Рисуем область для каждой категории
+for i, category in enumerate(df['Категория'].unique()):
+    cat_data = df[df['Категория'] == category]
+    cat_sales = cat_data.groupby('Дата')['Продажи'].sum().sort_index()
+
+    ax.fill_between(cat_sales.index,
+                    cat_sales.values,
+                    alpha=0.3,
+                    color=colors[i],
+                    label=category)
+
+    # Линия сверху
+    ax.plot(cat_sales.index, cat_sales.values,
+            color=colors[i], linewidth=2)
+
+# Настройка
+ax.set_title('Сравнение объемов продаж')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.legend()
+ax.grid(True, alpha=0.3)
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('area_multiple.png', dpi=300)'''
+            },
+            {
+                'name': '4️⃣ С градиентной заливкой',
+                'code': '''# Подготовка данных
+daily_sales = df.groupby('Дата')['Продажи'].sum().sort_index()
+
+# Создание графика
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Рисуем область с градиентом
+ax.fill_between(daily_sales.index,
+                daily_sales.values,
+                alpha=0.6,
+                color='purple',
+                label='Продажи')
+
+# Добавляем среднюю линию
+mean_line = daily_sales.mean()
+ax.axhline(mean_line, color='red',
+           linestyle='--', linewidth=2,
+           label=f'Среднее: {mean_line:,.0f}')
+
+# Закрашиваем область выше среднего
+ax.fill_between(daily_sales.index,
+                daily_sales.values,
+                mean_line,
+                where=(daily_sales.values >= mean_line),
+                alpha=0.3,
+                color='green',
+                label='Выше среднего')
+
+# Настройка
+ax.set_title('Продажи относительно среднего')
+ax.set_xlabel('Дата')
+ax.set_ylabel('Продажи (руб.)')
+ax.legend()
+ax.grid(True, alpha=0.3)
+ax.tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+plt.savefig('area_gradient.png', dpi=300)'''
+            }
+        ],
+        'tips': [
+            '💡 fill_between() создает заливку между линиями',
+            '💡 stackplot() для накопительных графиков',
+            '💡 where параметр условно закрашивает области',
+            '💡 alpha<1 для видимости наложений',
+            '💡 Хорош для показа объемов и накоплений'
+        ]
+    }
