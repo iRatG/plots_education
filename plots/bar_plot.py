@@ -1,0 +1,111 @@
+"""
+📊 СТОЛБЧАТАЯ ДИАГРАММА (Bar Plot)
+
+Описание:
+    Отображает данные в виде вертикальных или горизонтальных столбцов.
+    Используется для сравнения значений между различными категориями.
+
+Когда использовать:
+    ✓ Сравнение значений между категориями
+    ✓ Ранжирование и показ топов
+    ✓ Сравнение показателей по разным группам
+    ✓ Отображение дискретных данных
+
+Не использовать:
+    ✗ Для непрерывных временных рядов (лучше линейный график)
+    ✗ Для показа частей целого (лучше круговая диаграмма)
+"""
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def create_bar_plot(df, output_path='output/bar_plot.png'):
+    """
+    Создание столбчатой диаграммы
+
+    Args:
+        df: DataFrame с данными
+        output_path: путь для сохранения графика
+    """
+    print("\n" + "="*80)
+    print("📊 СТОЛБЧАТАЯ ДИАГРАММА (Bar Plot)")
+    print("="*80)
+
+    print("\n💡 Столбчатая диаграмма - лучший способ сравнить значения по категориям.")
+    print("   Высота столбца показывает величину значения.\n")
+
+    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+    fig.suptitle('Столбчатые диаграммы: примеры использования', fontsize=16, fontweight='bold')
+
+    # 1. Простая столбчатая диаграмма
+    category_sales = df.groupby('Категория')['Продажи'].sum().sort_values(ascending=False)
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A']
+    axes[0, 0].bar(category_sales.index, category_sales.values,
+                  color=colors, edgecolor='white', linewidth=2)
+    axes[0, 0].set_title('1️⃣ Простая столбчатая диаграмма')
+    axes[0, 0].set_ylabel('Продажи (руб.)')
+    axes[0, 0].tick_params(axis='x', rotation=45)
+    axes[0, 0].grid(axis='y', alpha=0.3)
+
+    # Добавляем значения на столбцы
+    for i, (idx, value) in enumerate(category_sales.items()):
+        axes[0, 0].text(i, value, f'{value/1000:.0f}K',
+                       ha='center', va='bottom', fontweight='bold')
+
+    # 2. Группированная столбчатая диаграмма
+    pivot = df.pivot_table(values='Продажи', index='Категория',
+                          columns='Регион', aggfunc='sum', fill_value=0)
+    x = np.arange(len(pivot.index))
+    width = 0.25
+    for i, region in enumerate(pivot.columns):
+        offset = (i - len(pivot.columns)/2 + 0.5) * width
+        axes[0, 1].bar(x + offset, pivot[region], width,
+                      label=region, alpha=0.8)
+    axes[0, 1].set_title('2️⃣ Группированная диаграмма')
+    axes[0, 1].set_ylabel('Продажи (руб.)')
+    axes[0, 1].set_xticks(x)
+    axes[0, 1].set_xticklabels(pivot.index, rotation=45)
+    axes[0, 1].legend()
+    axes[0, 1].grid(axis='y', alpha=0.3)
+
+    # 3. Горизонтальная столбчатая диаграмма
+    region_sales = df.groupby('Регион')['Продажи'].sum().sort_values()
+    axes[1, 0].barh(region_sales.index, region_sales.values,
+                   color='#54A0FF', edgecolor='white', linewidth=2)
+    axes[1, 0].set_title('3️⃣ Горизонтальная диаграмма')
+    axes[1, 0].set_xlabel('Продажи (руб.)')
+    axes[1, 0].grid(axis='x', alpha=0.3)
+
+    # Добавляем значения
+    for i, (idx, value) in enumerate(region_sales.items()):
+        axes[1, 0].text(value, i, f' {value/1000:.0f}K',
+                       va='center', fontweight='bold')
+
+    # 4. Накопительная столбчатая диаграмма (Stacked)
+    pivot_stack = df.pivot_table(values='Продажи', index='Регион',
+                                 columns='Категория', aggfunc='sum', fill_value=0)
+    pivot_stack.plot(kind='bar', stacked=True, ax=axes[1, 1],
+                    colormap='Set3', edgecolor='white', linewidth=1.5)
+    axes[1, 1].set_title('4️⃣ Накопительная диаграмма')
+    axes[1, 1].set_ylabel('Продажи (руб.)')
+    axes[1, 1].set_xlabel('')
+    axes[1, 1].tick_params(axis='x', rotation=45)
+    axes[1, 1].legend(title='Категория', bbox_to_anchor=(1.05, 1), loc='upper left')
+    axes[1, 1].grid(axis='y', alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    print(f"✅ График сохранен: {output_path}")
+
+    # Статистика
+    print("\n📊 Статистика по категориям:")
+    for cat, value in category_sales.items():
+        percentage = (value / category_sales.sum()) * 100
+        print(f"   • {cat}: {value:,.0f} руб. ({percentage:.1f}%)")
+
+    plt.close()
+
+    return output_path
